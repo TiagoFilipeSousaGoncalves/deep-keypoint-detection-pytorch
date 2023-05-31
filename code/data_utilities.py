@@ -93,27 +93,9 @@ def convert_to_keypoints_tupple(keypoints_data):
 
 
 
-""" Data """
-with open("processed_files/X_test_221.pickle",'rb') as fp: 
-    X = cPickle.load(fp)
-
-with open("processed_files/y_test_221.pickle",'rb') as fp: 
-    data = cPickle.load(fp)
-    
-keypoints = tupple(data)    
-
-density_map = heatmap_generation(X,keypoints)
-
-#print(np.shape(density_map))
-
-#for i in range(X.shape[0]): 
-#    plt.imshow(X[i])
-#    plt.imshow(density_map[i], interpolation='nearest', alpha=0.6)
-#    plt.show()
 
 
-with open("processed_files/heatmaps_test_221.pickle", "wb") as output_file:
-    cPickle.dump(density_map,output_file)
+
 
 
 
@@ -326,7 +308,7 @@ if __name__ == "__main__":
     SHOW_IMGS_KPTS = False
 
     # Load an instance of the PICTUREBCCTData class
-    picture_db = PICTUREBCCTData()
+    picture_db = PICTUREBCCTDataset()
 
 
     # Get the BCCT data DataFrame
