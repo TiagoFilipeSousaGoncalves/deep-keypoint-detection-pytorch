@@ -121,7 +121,11 @@ if args.database == "picture-db":
         filename = sample[0]
 
         # Open image
-        image = Image.open(os.path.join(images_dir, 'anterior', filename)).convert('RGB')
+        image_fpath = os.path.join(images_dir, 'anterior', filename)
+        if not os.path.exists(image_fpath):
+            image_fpath = os.path.join(images_dir, 'anterior', filename.split('.')[0]+'.JPG')
+        
+        image = Image.open(image_fpath).convert('RGB')
         image = np.array(image)
 
         # Keypoints
