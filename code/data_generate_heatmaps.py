@@ -29,6 +29,12 @@ if args.database == "picture-db":
     metadata_dir = "/nas-ctm01/datasets/private/CINDERELLA/picture-db/metadata"
     heatmaps_dir = f"/nas-ctm01/homes/tgoncalv/deep-keypoint-detection-pytorch/data/{args.database}/heatmaps"
 
+
+    # Create heatmaps directory
+    if not os.path.isdir(heatmaps_dir):
+        os.makedirs(heatmaps_dir)
+
+
     # Load files
     bcct_data = pd.read_csv(os.path.join(metadata_dir, 'bcct_data.csv'), sep=',')
     keypoints_bcct_data = bcct_data.copy()[
@@ -130,10 +136,7 @@ if args.database == "picture-db":
 
         # Keypoints
         keypoints = sample[1::]
-        print(len(keypoints))
-
-        exit()
-
+        # print(len(keypoints))
 
         # Convert to tupple
         keypoints_tupple = convert_to_keypoints_tupple(keypoints_data=keypoints)
@@ -147,3 +150,7 @@ if args.database == "picture-db":
             arr=heatmap,
             allow_pickle=True
         )
+
+
+
+print("Finished.")
