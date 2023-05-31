@@ -93,16 +93,6 @@ def convert_to_keypoints_tupple(keypoints_data):
 
 
 
-
-
-
-
-
-
-
-
-
-
 # Class: PICTUREBCCTData
 class PICTUREBCCTDataset(Dataset):
 
@@ -120,8 +110,39 @@ class PICTUREBCCTDataset(Dataset):
 
         # Load Keypoints Data
         self.get_keypoints_bcct_data_df()
-        
 
+        # Get images, keypoints and heatmaps
+        images = list()
+        keypoints = list()
+        heatmaps = list()
+        
+        # Convert to array
+        keypoints_bcct_data = self.keypoints_bcct_data.values
+
+        for sample in keypoints_bcct_data:
+        
+            # Image filename
+            image_fname = sample[0]
+
+            # Keypoints
+            image_keypoints = sample[1::]
+
+            # Heatmap filename
+            heatmap_fname = image_fname.split('.')[0]+'.npy'
+
+
+            # FIXME: We have to fix the annotation of this image
+            if image_fname.lower() != '040a.jpg'.lower():
+                images.append(image_fname)
+                keypoints.append(image_keypoints)
+                heatmaps.append(heatmap_fname)
+
+
+        # Assign variables
+        self.images = images
+        self.keypoints = keypoints
+        self.heatmaps = heatmaps
+        self.transform = transform
 
         return
 
@@ -222,8 +243,6 @@ class PICTUREBCCTDataset(Dataset):
                 'right contour y17',
                 'sternal notch x',
                 'sternal notch y',
-                'scale x',
-                'scale y',
                 'left nipple x',
                 'left nipple y',
                 'right nipple x',
@@ -243,121 +262,42 @@ class PICTUREBCCTDataset(Dataset):
         return len(self.images)
 
 
-    # Method: Show images and keypoints
-    def show_images_and_keypoints(self):
-
-        # Get keypoints data
-        keypoints_data = self.get_keypoints_bcct_data_df()
-
-        # Convert into an array
-        keypoints_data = keypoints_data.values
-        print('SHOW IMAGE AND KEYPOINTS!!')
-        # Iterate through this array
-        for sample in keypoints_data:
-            
-            # File name
-            filename = sample[0]
-
-            # Keypoints
-            keypoints = sample[1::]
-            image_path = os.path.join(self.images_dir, 'anterior',filename)
-
-            if not os.path.exists(image_path):
-                base, ext = os.path.splitext(filename)
-                image_path = os.path.join(self.images_dir, 'anterior',base + ext.upper())
-                if not os.path.exists(image_path):
-                    print(f"Could not find image file {filename}")
-                    continue
-            # Open image
-            image = Image.open(image_path).convert('RGB')
-            image = np.asarray(image)
-
-            # Plot this
-            plt.title(filename)
-            plt.imshow(image, cmap='gray')
-            plt.plot(keypoints[0:len(keypoints):2], keypoints[1:len(keypoints)+1:2], 'bo')
-            plt.show()
-        
-        return
-    
-
     # Method: __getitem__
     def __getitem__(self, idx):
         
         if torch.is_tensor(idx):
             idx = idx.tolist()
+
+        # Get image filename
+        image_fname = self.images[idx]
+        image_fpath = os.path.join(self.images_dir, 'anterior', image_fname)
+        if not os.path.exists(image_fpath):
+            image_fpath = os.path.join(self.images_dir, 'anterior', image_fname.split('.')+'.JPG')
         
-        pass
+        # Load image
+        image = Image.open(image_fpath).convert('RGB')
 
 
-    
+        # Get keypoints
+        keypoints = self.keypoints[idx]
 
+        # Get heatmap
+        heatmap = self.heatmaps[idx]
 
-
-
-
-
-
+        # Apply transforms
+        if self.transform:
+            pass
+        
+        return image, keypoints, heatmap
 
 
 
 # Example usage
 if __name__ == "__main__":
 
-    # Global variables
-    SHOW_IMGS_KPTS = False
-
-    # Load an instance of the PICTUREBCCTData class
-    picture_db = PICTUREBCCTDataset()
-
-
-    # Get the BCCT data DataFrame
-    bcct_data_df = picture_db.get_bcct_data_df()
-    print('BCCT data DataFrame')
-    print(bcct_data_df.head())
-
-
-    # Get the BCCT data DataFrame w/ keypoints information
-    keypoints_bcct_data_df = picture_db.get_keypoints_bcct_data_df()
-    print('BCCT data DataFrame w/ keypoints information')
-    print(keypoints_bcct_data_df.head())
-
-
-    # Get the BCCT data DataFrame w/ features and classification information
-    features_bcct_data_df = picture_db.get_features_bcct_data_df()
-    print('BCCT data DataFrame w/ features and classification information')
-    print(features_bcct_data_df.head())
-    
-    
-    # Get the 2D features data file
-    _2dfeatures_data_df = picture_db.get_2dfeatures_data_df()
-    print('2D features data file')
-    print(_2dfeatures_data_df.head())
-
-
-    # Get the 3D features data file
-    _3dfeatures_data_df = picture_db.get_3dfeatures_data_df()
-    print('3D features data file')
-    print(_3dfeatures_data_df.head())
-
-
-    # Get the Subjective Evaluation 2D data file
-    subjeval2d_data_df = picture_db.get_subjeval2d_data_df()
-    print('Subjective Evaluation 3D data file')
-    print(subjeval2d_data_df.head())
-
-    # Get the Subjective Evaluation 3D data file
-    subjeval3d_data_df = picture_db.get_subjeval3d_data_df()
-    print('Subjective Evaluation 3D data file')
-    print(subjeval3d_data_df.head())
-
-
-    # Get the patient codes data file
-    patient_codes_data_df = picture_db.get_patient_codes_data_df()
-    print('Patient codes data file')
-    print(patient_codes_data_df.head())
-
-
-    # Show images and keypoints
-    if SHOW_IMGS_KPTS:
-        picture_db.show_images_and_keypoints()
+    # PICTUREBCCTDataset
+    picture_dataset = PICTUREBCCTDataset(
+        images_dir="/nas-ctm01/datasets/private/CINDERELLA/picture-db/images",
+        heatmaps_dir=f"/nas-ctm01/homes/tgoncalv/deep-keypoint-detection-pytorch/data/picture-db/heatmaps",
+        metadata_dir="/nas-ctm01/datasets/private/CINDERELLA/picture-db/metadata"
+    )
