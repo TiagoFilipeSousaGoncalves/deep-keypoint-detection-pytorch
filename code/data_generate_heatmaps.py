@@ -4,6 +4,7 @@ import argparse
 import numpy as np
 import pandas as pd
 from PIL import Image
+from tqdm import tqdm
 
 # Project Imports
 from data_utilities import convert_to_keypoints_tupple, generate_heatmap 
@@ -121,7 +122,7 @@ if args.database == "picture-db":
     # Go through these data
     keypoints_bcct_data = keypoints_bcct_data.values
 
-    for sample in keypoints_bcct_data:
+    for sample in tqdm(keypoints_bcct_data):
         
         # Filename
         filename = sample[0]
@@ -146,7 +147,7 @@ if args.database == "picture-db":
 
         # Save heatmap
         np.save(
-            file=os.path.join(heatmaps_dir, filename.split('.')[0]+'npy'),
+            file=os.path.join(heatmaps_dir, filename.split('.')[0]+'.npy'),
             arr=heatmap,
             allow_pickle=True
         )
