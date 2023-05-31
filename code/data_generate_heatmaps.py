@@ -1,10 +1,12 @@
 # Imports
 import os
 import argparse
+import numpy as np
 import pandas as pd
+from PIL import Image
 
 # Project Imports
-from data_utilities import convert_to_keypoints_tupple, heatmap_generation 
+from data_utilities import convert_to_keypoints_tupple, generate_heatmap 
 
 
 
@@ -118,9 +120,26 @@ if args.database == "picture-db":
         # Filename
         filename = sample[0]
 
+        # Open image
+        image = Image.open(os.path.join(images_dir, 'anterior', filename)).convert('RGB')
+        image = np.array(image)
+
         # Keypoints
         keypoints = sample[1::]
+        print(len(keypoints))
+
+        exit()
 
 
         # Convert to tupple
-        keypoints_tupple = convert_to_keypoints_tupple()
+        keypoints_tupple = convert_to_keypoints_tupple(keypoints_data=keypoints)
+
+        # Generate heatmap
+        heatmap = generate_heatmap(image=image, keypoints_tupple=keypoints_tupple)
+
+        # Save heatmap
+        np.save(
+            file=os.path.join(heatmaps_dir, filename.split('.')[0]+'npy'),
+            arr=heatmap,
+            allow_pickle=True
+        )

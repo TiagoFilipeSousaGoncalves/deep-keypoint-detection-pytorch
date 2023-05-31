@@ -15,9 +15,9 @@ from torch.utils.data import Dataset
 
 
 
-# Function to generate heatmaps
-def get_pdf(im, kpts, sigma):
-    w, h, channels = im.shape
+# Function: Generate heatmaps from image and keypoints tupple
+def generate_heatmap(image, keypoints_tupple, sigma=400):
+    w, h, _ = image.shape
     
     x = np.linspace(0, h-1, h*1)
     y = np.linspace(0, w-1, w*1)
@@ -28,7 +28,7 @@ def get_pdf(im, kpts, sigma):
     p = 2
     count=0
     for i in range(0,37):
-        mu = np.array([kpts[i][1], kpts[i][0]]).reshape((2,1)) 
+        mu = np.array([keypoints_tupple[i][1], keypoints_tupple[i][0]]).reshape((2,1)) 
         mu = np.tile(mu, (1, sze))
         mcov = np.identity(2) * std
         
@@ -62,49 +62,35 @@ def get_pdf(im, kpts, sigma):
 
 
 # Function: Convert keypoints to tupple of keypoints
-def convert_to_keypoints_tupple(data):
-    
-    points = np.array(data)
-    
-    tupple_keypoints = []
-    tupple_aux = [] 
+def convert_to_keypoints_tupple(keypoints_data):
+
+    # Ensure that data is from the NumPy array type
+    keypoints_arr = np.array(keypoints_data)
+
+    # Create temporary lists
+    keypoints_tupple = []
     x = []
     y = []
-    
-    for i in range(np.shape(points)[0]): 
-        for j in range(74): 
-            if (j % 2 == 0): 
-                x.append(int(points[i][j]))
-            else:
-                y.append(int(points[i][j]))    
-        for z in range(37):
-            tupple_aux.append((int(x[z]),int(y[z])))
-        tupple_keypoints.append(tupple_aux)
-        x = [] 
-        y = [] 
-        tupple_aux = [] 
-    
-    for i in range(np.shape(points)[0]):
-        tupple_keypoints.append(points[i])
-    
-    keypoints = np.array(tupple_keypoints)
 
-    return keypoints
+    # Get xx and yy coordinates
+    for j in range(len(keypoints_arr)): 
+        if (j % 2 == 0): 
+            x.append(int(keypoints_arr[j]))
+        else:
+            y.append(int(keypoints_arr[j]))    
 
 
-# Heatmaps
-def heatmap_generation(X, keypoints):
+    # Convert this into tupples of xy 
+    for z in range(int(len(keypoints_arr)/2)):
+        keypoints_tupple.append((int(x[z]), int(y[z])))
 
-    density_map = []
-    
-    for i in range(np.shape(X)[0]): 
-        oriImg = X[i]
-        mapa = get_pdf(oriImg,keypoints[i],400)
-        density_map.append(mapa)
-        
-    density_map = np.array(density_map)
-    
-    return density_map
+
+    # Convert keypoints tupple to NumPy array
+    keypoints_tupple = np.array(keypoints_tupple)
+
+
+    return keypoints_tupple
+
 
 
 """ Data """
