@@ -15,6 +15,34 @@ from torch.utils.data import Dataset
 
 
 
+# Function: Resize images and keypoints
+def resize_images_keypoints(image, keypoints_array, new_width=512, new_height=512):
+
+    # Get image shape
+    rows, columns, _ = np.shape(image)
+
+    # Get ratios
+    x1 = rows / new_height
+    x2 = columns / new_width
+
+    # Get new images
+    resized_image = np.array(image.copy())
+    resized_image = cv2.resize(resized_image, (rows / x1, columns / x2), interpolation=cv2.INTER_AREA)
+
+    # Get new keypoints
+    resized_keypoints = keypoints_array.copy()
+
+    for j in range(len(resized_keypoints)):
+        if(j % 2 == 0):
+            resized_keypoints[j] /= x2
+        else: 
+            resized_keypoints[j] /= x1
+
+
+    return resized_image, resized_keypoints
+
+
+
 # Function: Generate heatmaps from image and keypoints tupple
 def generate_heatmap(image, keypoints_tupple, sigma=400):
     w, h, _ = image.shape
