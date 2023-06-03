@@ -27,7 +27,7 @@ def resize_images_keypoints(image, keypoints_array, new_width=512, new_height=51
 
     # Get new images
     resized_image = np.array(image.copy())
-    resized_image = cv2.resize(resized_image, (np.ceil(rows / x1), np.ceil(columns / x2)), interpolation=cv2.INTER_AREA)
+    resized_image = cv2.resize(resized_image, (int(np.ceil(rows / x1)), int(np.ceil(columns / x2))), interpolation=cv2.INTER_AREA)
 
     # Get new keypoints
     resized_keypoints = keypoints_array.copy()
