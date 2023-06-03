@@ -37,7 +37,7 @@ args = parser.parse_args()
 # Get the arguments
 ORIGINAL_PATH = args.original_path
 NEW_PATH = args.new_path
-NEW_WIDTH = args.args.new_width
+NEW_WIDTH = args.new_width
 NEW_HEIGHT = args.new_height
 
 
