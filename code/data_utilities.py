@@ -121,50 +121,25 @@ def convert_to_keypoints_tupple(keypoints_data):
 
 
 
-# Class: PICTUREBCCTData
-class PICTUREBCCTDataset(Dataset):
+# Class: PICTUREBCCTKDetection
+class PICTUREBCCTKDetectionDataset(Dataset):
 
-    def __init__(self, images_dir, heatmaps_dir, metadata_dir, transform=None):
+    def __init__(self, images_dir, heatmaps_dir, keypoints_dir, transform=None):
 
         # Class variables
         self.images_dir = images_dir
         self.heatmaps_dir = heatmaps_dir
-        self.metadata_dir = metadata_dir
-        self.bcct_data = None
-        self.keypoints_bcct_data = None
+        self.keypoints_dir = keypoints_dir
 
-        # Load BCCT data
-        self.get_bcct_data_df()
-
-        # Load Keypoints Data
-        self.get_keypoints_bcct_data_df()
-
-        # Get images, keypoints and heatmaps
-        images = list()
-        keypoints = list()
-        heatmaps = list()
+        # Get images, keypoints and heatmaps (FIXME: We have to fix the annotation of image id '040a')
+        images = [i for i in os.listdir(self.images_dir) if not i.startswith('.')]
+        images = [i for i in images if i != '040a.jpg']
         
-        # Convert to array
-        keypoints_bcct_data = self.keypoints_bcct_data.values
+        keypoints = [k for k in os.listdir(self.keypoints_dir) if not k.startswith('.')]
+        keypoints = [k for k in keypoints if k != '040a.npy']
 
-        for sample in keypoints_bcct_data:
-        
-            # Image filename
-            image_fname = sample[0]
-
-            # Keypoints
-            image_keypoints = sample[1::]
-
-            # Heatmap filename
-            heatmap_fname = image_fname.split('.')[0]+'.npy'
-
-
-            # FIXME: We have to fix the annotation of this image
-            if image_fname.lower() != '040a.jpg'.lower():
-                images.append(image_fname)
-                keypoints.append(image_keypoints)
-                heatmaps.append(heatmap_fname)
-
+        heatmaps = [h for h in os.listdir(self.heatmaps_dir) if not h.startswith('.')]
+        heatmaps = [h for h in heatmaps if h != '040a.npy']
 
         # Assign variables
         self.images = images
@@ -173,116 +148,6 @@ class PICTUREBCCTDataset(Dataset):
         self.transform = transform
 
         return
-
-
-    # Method: Get the BCCT data DataFrame
-    def get_bcct_data_df(self):
-        
-        # Return this, if available
-        if self.bcct_data is not None:
-            bcct_data_df = self.bcct_data.copy()
-        
-        # Read .CSV with BCCT data related to PICTURE
-        else:
-            bcct_data_df = pd.read_csv(os.path.join(self.metadata_dir, 'bcct_data.csv'), sep=',')
-            self.bcct_data = bcct_data_df.copy()
-        
-        return bcct_data_df
-    
-
-    # Method: Get the BCCT data DataFrame w/ keypoints information
-    def get_keypoints_bcct_data_df(self):
-
-        # Return this information, if available
-        if self.keypoints_bcct_data is not None:
-            keypoints_bcct_data = self.keypoints_bcct_data.copy()
-
-        else:
-            keypoints_bcct_data = self.bcct_data.copy()[
-                [
-                'file path',
-                'left contour x1',
-                'left contour y1',
-                'left contour x2',
-                'left contour y2',
-                'left contour x3',
-                'left contour y3',
-                'left contour x4',
-                'left contour y4',
-                'left contour x5',
-                'left contour y5',
-                'left contour x6',
-                'left contour y6',
-                'left contour x7',
-                'left contour y7',
-                'left contour x8',
-                'left contour y8',
-                'left contour x9',
-                'left contour y9',
-                'left contour x10',
-                'left contour y10',
-                'left contour x11',
-                'left contour y11',
-                'left contour x12',
-                'left contour y12',
-                'left contour x13',
-                'left contour y13',
-                'left contour x14',
-                'left contour y14',
-                'left contour x15',
-                'left contour y15',
-                'left contour x16',
-                'left contour y16',
-                'left contour x17',
-                'left contour y17',
-                'right contour x1',
-                'right contour y1',
-                'right contour x2',
-                'right contour y2',
-                'right contour x3',
-                'right contour y3',
-                'right contour x4',
-                'right contour y4',
-                'right contour x5',
-                'right contour y5',
-                'right contour x6',
-                'right contour y6',
-                'right contour x7',
-                'right contour y7',
-                'right contour x8',
-                'right contour y8',
-                'right contour x9',
-                'right contour y9',
-                'right contour x10',
-                'right contour y10',
-                'right contour x11',
-                'right contour y11',
-                'right contour x12',
-                'right contour y12',
-                'right contour x13',
-                'right contour y13',
-                'right contour x14',
-                'right contour y14',
-                'right contour x15',
-                'right contour y15',
-                'right contour x16',
-                'right contour y16',
-                'right contour x17',
-                'right contour y17',
-                'sternal notch x',
-                'sternal notch y',
-                'left nipple x',
-                'left nipple y',
-                'right nipple x',
-                'right nipple y'
-                ]
-            ]
-
-            # Add this to the corresponding class variable
-            self.keypoints_bcct_data = keypoints_bcct_data.copy()
-
-
-        return keypoints_bcct_data
     
     
     # Method: __len__
@@ -296,26 +161,32 @@ class PICTUREBCCTDataset(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        # Get image filename
+        # Get image filename and load image
         image_fname = self.images[idx]
         image_fpath = os.path.join(self.images_dir, 'anterior', image_fname)
-        if not os.path.exists(image_fpath):
-            image_fpath = os.path.join(self.images_dir, 'anterior', image_fname.split('.')+'.JPG')
-        
-        # Load image
         image = Image.open(image_fpath).convert('RGB')
+        image = np.array(image)
 
+        # Get keypoints filename and load keypoint
+        keypoints_fname = self.keypoints[idx]
+        keypoints = np.load(os.path.join(self.keypoints_dir, keypoints_fname), allow_pickle=True, fix_imports=True)
 
-        # Get keypoints
-        keypoints = self.keypoints[idx]
-
-        # Get heatmap
-        heatmap = self.heatmaps[idx]
+        # Get heatmap filename and load heatmap
+        heatmap_fname = self.heatmaps[idx]
+        heatmap = np.load(os.path.join(self.heatmaps_dir, heatmap_fname), allow_pickle=True, fix_imports=True)
 
         # Apply transforms
         if self.transform:
-            pass
-        
+            transformed = self.transform(
+                image=image,
+                mask=heatmap,
+                keypoints=keypoints
+            )
+
+            image = transformed["image"]
+            keypoints = transformed["keypoints"]
+            heatmap = transformed["mask"]
+
         return image, keypoints, heatmap
 
 
@@ -324,7 +195,7 @@ class PICTUREBCCTDataset(Dataset):
 if __name__ == "__main__":
 
     # PICTUREBCCTDataset
-    picture_dataset = PICTUREBCCTDataset(
+    picture_dataset = PICTUREBCCTKDetectionDataset(
         images_dir="/nas-ctm01/datasets/private/CINDERELLA/picture-db/images",
         heatmaps_dir=f"/nas-ctm01/homes/tgoncalv/deep-keypoint-detection-pytorch/data/picture-db/heatmaps",
         metadata_dir="/nas-ctm01/datasets/private/CINDERELLA/picture-db/metadata"
