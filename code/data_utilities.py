@@ -140,6 +140,21 @@ def convert_keypoints_to_albumentations(keypoints_array):
 
 
 
+# Function: Convert albumentations to keypoints
+def convert_albumentations_to_keypoints(keypoints_list):
+
+    keypoints_array = list()
+
+    for kpts_tupple in keypoints_list:
+        keypoints_array.append(kpts_tupple[0])
+        keypoints_array.append(kpts_tupple[1])
+    
+    keypoints_array = np.array(keypoints_array)
+
+    return keypoints_array
+
+
+
 # Class: PICTUREBCCTKDetection
 class PICTUREBCCTKDetectionDataset(Dataset):
 
@@ -154,11 +169,13 @@ class PICTUREBCCTKDetectionDataset(Dataset):
         images = [i for i in os.listdir(os.path.join(self.images_dir, 'anterior')) if not i.startswith('.')]
         images = [i for i in images if i != '040a.jpg']
         
-        keypoints = [k for k in os.listdir(self.keypoints_dir) if not k.startswith('.')]
-        keypoints = [k for k in keypoints if k != '040a.npy']
+        keypoints, heatmaps = list(), list()
 
-        heatmaps = [h for h in os.listdir(self.heatmaps_dir) if not h.startswith('.')]
-        heatmaps = [h for h in heatmaps if h != '040a.npy']
+        for image_fname in images:
+            npy_fname = image_fname.split('.')[0] + '.npy'
+            keypoints.append(npy_fname)
+            heatmaps.append(npy_fname)
+
 
         # Assign variables
         self.images = images
@@ -195,6 +212,7 @@ class PICTUREBCCTKDetectionDataset(Dataset):
         heatmap_fname = self.heatmaps[idx]
         heatmap = np.load(os.path.join(self.heatmaps_dir, heatmap_fname), allow_pickle=True, fix_imports=True)
 
+
         # Apply transforms
         if self.transform:
             transformed = self.transform(
@@ -207,5 +225,10 @@ class PICTUREBCCTKDetectionDataset(Dataset):
             keypoints = transformed["keypoints"]
             heatmap = transformed["mask"]
 
+
+        # Keypoints post-processing
+        keypoints = convert_albumentations_to_keypoints(keypoints)
+        keypoints /= 512
+        keypoints = torch.from_numpy(keypoints)
 
         return image, keypoints, heatmap
