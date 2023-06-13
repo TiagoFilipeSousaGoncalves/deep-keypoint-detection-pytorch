@@ -47,7 +47,7 @@ parser.add_argument('--batch_size', type=int, default=32, help="Batch size for d
 parser.add_argument('--num_workers', type=int, default=0, help="Number of workers for dataloader.")
 
 # Device
-parser.add_argument('--gpu_id', type=int, default=1, help="The ID of the GPU.")
+parser.add_argument('--gpu_id', type=int, default=0, help="The ID of the GPU.")
 
 # Results directory
 parser.add_argument('--results_directory', type=str, default='results', help="Results directory")
