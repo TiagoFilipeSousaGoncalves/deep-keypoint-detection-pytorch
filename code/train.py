@@ -92,7 +92,7 @@ if DATABASE == "picture-db":
             A.Normalize(),
             A_torch.ToTensorV2(),
         ],
-        keypoint_params=A.KeypointParams(format='xy')
+        keypoint_params=A.KeypointParams(format='xy', remove_invisible=False)
     )
 
     dataset = PICTUREBCCTKDetectionDataset(
