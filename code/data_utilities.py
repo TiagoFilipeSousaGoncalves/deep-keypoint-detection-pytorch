@@ -151,7 +151,7 @@ class PICTUREBCCTKDetectionDataset(Dataset):
         self.keypoints_dir = keypoints_dir
 
         # Get images, keypoints and heatmaps (FIXME: We have to fix the annotation of image id '040a')
-        images = [i for i in os.listdir(self.images_dir, 'anterior') if not i.startswith('.')]
+        images = [i for i in os.listdir(os.path.join(self.images_dir, 'anterior')) if not i.startswith('.')]
         images = [i for i in images if i != '040a.jpg']
         
         keypoints = [k for k in os.listdir(self.keypoints_dir) if not k.startswith('.')]
