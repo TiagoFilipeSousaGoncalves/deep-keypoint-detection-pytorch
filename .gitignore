@@ -130,7 +130,6 @@ dmypy.json
 
 
 # Directories
-# code/ProtoPNet-master/
 data
 results
 
