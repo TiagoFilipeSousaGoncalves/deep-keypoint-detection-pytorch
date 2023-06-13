@@ -202,6 +202,7 @@ for epoch in range(EPOCHS):
 
     if running_avg_kpts_loss < best_keypoints_loss:
         print(f"Keypoints loss decreased from {best_keypoints_loss} to {running_avg_kpts_loss}.")
+        best_keypoints_loss = running_avg_kpts_loss
 
         model_path = os.path.join(results_dir, 'best_model.pt')
         print(f"Saving model into: {model_path}")
