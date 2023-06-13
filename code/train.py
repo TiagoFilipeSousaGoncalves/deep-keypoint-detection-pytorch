@@ -124,8 +124,8 @@ loss_stage4 = torch.nn.MSELoss(reduction='mean')
 
 
 # Train model
-best_loss = -np.inf
-best_keypoints_loss = -np.inf
+best_loss = np.inf
+best_keypoints_loss = np.inf
 
 for epoch in range(EPOCHS):
 
