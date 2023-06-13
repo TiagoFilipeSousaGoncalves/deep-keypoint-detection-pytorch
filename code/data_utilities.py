@@ -229,6 +229,9 @@ class PICTUREBCCTKDetectionDataset(Dataset):
         # Keypoints post-processing
         keypoints = convert_albumentations_to_keypoints(keypoints)
         keypoints /= 512
-        keypoints = torch.from_numpy(keypoints)
+        keypoints = torch.from_numpy(keypoints).float()
+
+        # Heatmap post processing
+        heatmap = torch.unsqueeze(heatmap, 0)
 
         return image, keypoints, heatmap
