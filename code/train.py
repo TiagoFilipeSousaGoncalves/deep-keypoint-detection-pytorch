@@ -4,6 +4,7 @@ import os
 import datetime
 import numpy as np
 import albumentations as A
+import albumentations.pytorch as A_torch
 from tqdm import tqdm
 
 # PyTorch Imports
@@ -88,7 +89,7 @@ if DATABASE == "picture-db":
             A.Affine(translate_px={'x':(-50, 50), 'y':(-30, 30)}, rotate=(-10, 10), p=0.1),
             A.HorizontalFlip(p=0.1),
             A.RandomBrightnessContrast(p=0.1),
-            A.ToTensorV2(),
+            A_torch.ToTensorV2(),
             A.Normalize()
         ],
         keypoint_params=A.KeypointParams(format='xy')
