@@ -89,8 +89,8 @@ if DATABASE == "picture-db":
             A.Affine(translate_px={'x':(-50, 50), 'y':(-30, 30)}, rotate=(-10, 10), p=0.1),
             A.HorizontalFlip(p=0.1),
             A.RandomBrightnessContrast(p=0.1),
+            A.Normalize(),
             A_torch.ToTensorV2(),
-            A.Normalize()
         ],
         keypoint_params=A.KeypointParams(format='xy')
     )
