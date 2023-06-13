@@ -1,13 +1,9 @@
 # Imports
 import os
 import numpy as np 
-import pandas as pd
-import _pickle as cPickle
-import matplotlib.pyplot as plt
 import math
 import cv2
 from PIL import Image
-import scipy.misc
 
 # PyTorch Imports
 import torch
@@ -121,6 +117,29 @@ def convert_to_keypoints_tupple(keypoints_data):
 
 
 
+# Function: Convert keypoints to albumentations format
+def convert_keypoints_to_albumentations(keypoints_array):
+
+    # Convert keypoints to x, y notation    
+    x = list()
+    y = list()
+    for i in range(len(keypoints_array)):
+        if i % 2 == 0:
+            x.append(keypoints_array[i])
+        else:
+            y.append(keypoints_array[i])
+    
+
+    # Generate list of keypoint tupples
+    keypoints_list = list()
+    for x_i, y_i in zip(x, y):
+        keypoints_list.append((x_i, y_i))
+
+
+    return keypoints_list
+
+
+
 # Class: PICTUREBCCTKDetection
 class PICTUREBCCTKDetectionDataset(Dataset):
 
@@ -170,6 +189,7 @@ class PICTUREBCCTKDetectionDataset(Dataset):
         # Get keypoints filename and load keypoint
         keypoints_fname = self.keypoints[idx]
         keypoints = np.load(os.path.join(self.keypoints_dir, keypoints_fname), allow_pickle=True, fix_imports=True)
+        keypoints = convert_keypoints_to_albumentations(keypoints)
 
         # Get heatmap filename and load heatmap
         heatmap_fname = self.heatmaps[idx]
@@ -187,16 +207,5 @@ class PICTUREBCCTKDetectionDataset(Dataset):
             keypoints = transformed["keypoints"]
             heatmap = transformed["mask"]
 
+
         return image, keypoints, heatmap
-
-
-
-# Example usage
-if __name__ == "__main__":
-
-    # PICTUREBCCTDataset
-    picture_dataset = PICTUREBCCTKDetectionDataset(
-        images_dir="/nas-ctm01/datasets/private/CINDERELLA/picture-db/images",
-        heatmaps_dir=f"/nas-ctm01/homes/tgoncalv/deep-keypoint-detection-pytorch/data/picture-db/heatmaps",
-        metadata_dir="/nas-ctm01/datasets/private/CINDERELLA/picture-db/metadata"
-    )
