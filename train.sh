@@ -10,6 +10,6 @@
 
 echo "CINDERELLA Deep Keypoint Detection | PICTURE-DB | Started"
 
-python code/train.py --database picture-db --epochs 300 --batch_size 16 --num_workers 4 --gpu_id 0 --results_directory results
+python code/train.py --database picture-db --epochs 300 --batch_size 8 --num_workers 4 --gpu_id 0 --results_directory results
 
 echo "CINDERELLA Deep Keypoint Detection | PICTURE-DB | Finished"
