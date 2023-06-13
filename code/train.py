@@ -158,7 +158,7 @@ for epoch in range(EPOCHS):
         loss4 = loss_stage4(stage4, keypoints)
 
         # Final loss is give by the weighted sum of these losses
-        loss = 1*loss1 + 2*loss2 + 4*loss3 + 10*loss4
+        loss = 1.*loss1 + 2.*loss2 + 4.*loss3 + 10.*loss4
         
         # Perform backpropagation
         loss.backward()
