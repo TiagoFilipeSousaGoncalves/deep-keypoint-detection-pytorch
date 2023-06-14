@@ -12,7 +12,7 @@ import torch
 from torch.utils.data import DataLoader
 
 # Project Imports
-from data_utilities import PICTUREBCCTKDetectionDataset
+from data_utilities import PICTUREBCCTKDetectionDataset, ISBIDBKDetectionDataset
 from model_utilities import DeepKeypointDetectionModel
 
 # Weights and Biases (W&B) Imports
@@ -35,7 +35,7 @@ parser = argparse.ArgumentParser()
 
 
 # Database(s)
-parser.add_argument('--database', type=str, choices=['picture-db'], help="Database(s) to use (i.e., picture-db)")
+parser.add_argument('--database', type=str, choices=['picture-db', 'original_files'], help="Database(s) to use (i.e., picture-db, original_files)")
 
 # Epochs
 parser.add_argument('--epochs', type=int, default=300, help="Number of epochs to train the model.")
@@ -52,6 +52,9 @@ parser.add_argument('--gpu_id', type=int, default=0, help="The ID of the GPU.")
 # Results directory
 parser.add_argument('--results_directory', type=str, default='results', help="Results directory")
 
+# Load pre-trained weights (to fine tune)
+parser.add_argument('--load_pretrained_weights', type=str, default=None, help="Path to pre-trained weights (if applicable)")
+
 # Parse the arguments
 args = parser.parse_args()
 DATABASE = args.database
@@ -60,6 +63,7 @@ BATCH_SIZE = args.batch_size
 NUM_WORKERS = args.num_workers
 DEVICE = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
 RESULTS_DIR = args.results_directory
+LOAD_PRETRAINED_WEIGHTS = args.load_pretrained_weights
 
 
 # Timestamp (to save results)
@@ -105,10 +109,39 @@ if DATABASE == "picture-db":
     dataloader = DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
 
 
+elif DATABASE == "original_files":
+    transform = A.Compose(
+        [
+            A.Affine(translate_px={'x':(-50, 50), 'y':(-30, 30)}, rotate=(-10, 10), p=0.1),
+            A.HorizontalFlip(p=0.1),
+            A.RandomBrightnessContrast(p=0.1),
+            A.Normalize(),
+            A_torch.ToTensorV2(),
+        ],
+        keypoint_params=A.KeypointParams(format='xy', remove_invisible=False)
+    )
+
+    dataset = ISBIDBKDetectionDataset(
+        images_dir='/nas-ctm01/datasets/private/CINDERELLA/processed-databases/deep-keypoint-detection/original_files/images/',
+        heatmaps_dir='/nas-ctm01/datasets/private/CINDERELLA/processed-databases/deep-keypoint-detection/original_files/heatmaps/',
+        keypoints_dir='/nas-ctm01/datasets/private/CINDERELLA/processed-databases/deep-keypoint-detection/original_files/keypoints/',
+        transform=transform
+    )
+
+    dataloader = DataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
+
+
 
 # Model & Hyperparameters
 model = DeepKeypointDetectionModel()
 model.to(DEVICE)
+
+
+# Load pre-trained weights
+if LOAD_PRETRAINED_WEIGHTS is not None:
+    model_weights = torch.load(os.path.join(LOAD_PRETRAINED_WEIGHTS, 'best_model.pt'), map_location=DEVICE)
+    model.load_state_dict(model_weights['model_state_dict'], strict=True)
+
 
 # Watch model using W&B
 wandb.watch(model)

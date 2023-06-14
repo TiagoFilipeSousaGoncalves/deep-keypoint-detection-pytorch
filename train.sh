@@ -8,8 +8,10 @@
 
 
 
-echo "CINDERELLA Deep Keypoint Detection | PICTURE-DB | Started"
+# echo "CINDERELLA Deep Keypoint Detection | PICTURE-DB | Started"
+# python code/train.py --database picture-db --epochs 300 --batch_size 8 --num_workers 4 --gpu_id 0 --results_directory results
+# echo "CINDERELLA Deep Keypoint Detection | PICTURE-DB | Finished"
 
-python code/train.py --database picture-db --epochs 300 --batch_size 8 --num_workers 4 --gpu_id 0 --results_directory results
-
-echo "CINDERELLA Deep Keypoint Detection | PICTURE-DB | Finished"
+echo "CINDERELLA Deep Keypoint Detection | ISBI-DB | Started"
+python code/train.py --database original_files --epochs 300 --batch_size 8 --num_workers 4 --gpu_id 0 --results_directory results --load_pretrained_weights /nas-ctm01/homes/tgoncalv/deep-keypoint-detection-pytorch/results/2023-06-13_23-06-50/
+echo "CINDERELLA Deep Keypoint Detection | ISBI-DB | Finished"

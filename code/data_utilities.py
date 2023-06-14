@@ -228,6 +228,91 @@ class PICTUREBCCTKDetectionDataset(Dataset):
 
         # Images post-processing
         image = image.float()
+
+        # Keypoints post-processing
+        keypoints = convert_albumentations_to_keypoints(keypoints)
+        keypoints /= 512.
+        keypoints = torch.from_numpy(keypoints).float()
+
+        # Heatmap post processing
+        heatmap = torch.unsqueeze(heatmap, 0).float()
+
+        return image, keypoints, heatmap
+
+
+
+# Class: ISBIDBKDetection
+class ISBIDBKDetectionDataset(Dataset):
+
+    def __init__(self, images_dir, heatmaps_dir, keypoints_dir, transform=None):
+
+        # Class variables
+        self.images_dir = images_dir
+        self.heatmaps_dir = heatmaps_dir
+        self.keypoints_dir = keypoints_dir
+
+        # Get images, keypoints and heatmaps
+        images = [i for i in os.listdir(os.path.join(self.images_dir, 'anterior')) if not i.startswith('.')]
+        
+        keypoints, heatmaps = list(), list()
+
+        for image_fname in images:
+            npy_fname = image_fname.split('.')[0] + '.npy'
+            keypoints.append(npy_fname)
+            heatmaps.append(npy_fname)
+
+
+        # Assign variables
+        self.images = images
+        self.keypoints = keypoints
+        self.heatmaps = heatmaps
+        self.transform = transform
+
+        return
+    
+    
+    # Method: __len__
+    def __len__(self):
+        return len(self.images)
+
+
+    # Method: __getitem__
+    def __getitem__(self, idx):
+        
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        # Get image filename and load image
+        image_fname = self.images[idx]
+        image_fpath = os.path.join(self.images_dir, image_fname)
+        image = Image.open(image_fpath).convert('RGB')
+        image = np.array(image)
+
+        # Get keypoints filename and load keypoint
+        keypoints_fname = self.keypoints[idx]
+        keypoints = np.load(os.path.join(self.keypoints_dir, keypoints_fname), allow_pickle=True, fix_imports=True)
+        keypoints = convert_keypoints_to_albumentations(keypoints)
+
+        # Get heatmap filename and load heatmap
+        heatmap_fname = self.heatmaps[idx]
+        heatmap = np.load(os.path.join(self.heatmaps_dir, heatmap_fname), allow_pickle=True, fix_imports=True)
+
+
+        # Apply transforms
+        if self.transform:
+            transformed = self.transform(
+                image=image,
+                mask=heatmap,
+                keypoints=keypoints
+            )
+
+            image = transformed["image"]
+            keypoints = transformed["keypoints"]
+            heatmap = transformed["mask"]
+
+
+        # Images post-processing
+        image = image.float()
         
         # Keypoints post-processing
         keypoints = convert_albumentations_to_keypoints(keypoints)
