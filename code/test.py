@@ -69,6 +69,7 @@ for image_fname in tqdm(images_fnames_list):
     image = Image.open(os.path.join(images_dir, image_fname)).convert('RGB')
     image = np.array(image)
     image = transform(image=image)['image']
+    image = torch.unsqueeze(image, dim=0)
 
     # Get predictions
     _, _, _, keypoints_prediction = model(image)
