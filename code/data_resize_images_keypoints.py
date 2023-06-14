@@ -213,8 +213,8 @@ elif args.database == 'original_files':
         for idx in tqdm(range(len(filenames_list))):
         
             # Filename
-            filename = filenames_list[idx]
-            print(filename)
+            filename = filenames_list[idx].split('/')[-1]
+            # print(filename)
 
             # Open image
             image_fpath = os.path.join(or_images_dir, filename)
