@@ -5,6 +5,7 @@ import cv2
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
+import _pickle as Cpickle
 
 # Project Import
 from data_utilities import resize_images_keypoints
@@ -16,7 +17,7 @@ from data_utilities import resize_images_keypoints
 parser = argparse.ArgumentParser()
 
 # Database
-parser.add_argument('--database', type=str, required=True, choices=["picture-db"], help="Database(s): picture-db.")
+parser.add_argument('--database', type=str, required=True, choices=["picture-db", "original_files"], help="Database(s): picture-db.")
 
 # Original directory
 parser.add_argument("--original_path", type=str, help="Directory of the original data set.")
@@ -184,3 +185,62 @@ if args.database == 'picture-db':
             arr=resized_keypoints,
             allow_pickle=True
         )
+
+elif args.database == 'original_files':
+        
+        # Original directories
+        or_images_dir = os.path.join(ORIGINAL_PATH, "images")
+        or_metadata_dir = os.path.join(ORIGINAL_PATH, "files")
+    
+    
+        # New directories
+        n_images_dir = os.path.join(NEW_PATH, args.database.lower(), "images")
+        n_keypoints_dir = os.path.join(NEW_PATH, args.database.lower(), "keypoints")
+        if not os.path.isdir(n_images_dir):
+            os.makedirs(n_images_dir)
+        if not os.path.isdir(n_keypoints_dir):
+            os.makedirs(n_keypoints_dir)
+        
+
+        # Open pickle with the filenames and the keypoints
+        with open(os.path.join(or_metadata_dir, 'filenames.pickle'), 'rb') as fp:
+            filenames_list = Cpickle.load(fp)
+        
+        with open(os.path.join(or_metadata_dir, 'keypoints.pickle'), 'rb') as fp:
+            keypoints_list = Cpickle.load(fp)
+
+
+        for idx in tqdm(range(len(filenames_list))):
+        
+            # Filename
+            filename = filenames_list[idx]
+
+            # Open image
+            image_fpath = os.path.join(or_images_dir, filename)
+            
+            # Read image
+            image = cv2.imread(os.path.join(image_fpath))
+
+            # Keypoints
+            keypoints = keypoints_list[idx]
+
+
+            # Resize image and keypoints
+            resized_image, resized_keypoints = resize_images_keypoints(
+                image=image,
+                keypoints_array=keypoints,
+                new_width=NEW_WIDTH,
+                new_height=NEW_HEIGHT
+            )
+
+
+            # Save new image
+            cv2.imwrite(os.path.join(n_images_dir, filename), resized_image)
+
+
+            # Save new keypoints
+            np.save(
+                file=os.path.join(n_keypoints_dir, filename.split('.')[0]+'.npy'),
+                arr=resized_keypoints,
+                allow_pickle=True
+            )
