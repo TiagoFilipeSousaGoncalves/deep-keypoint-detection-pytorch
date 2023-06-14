@@ -252,7 +252,7 @@ class ISBIDBKDetectionDataset(Dataset):
         self.keypoints_dir = keypoints_dir
 
         # Get images, keypoints and heatmaps
-        images = [i for i in os.listdir(os.path.join(self.images_dir, 'anterior')) if not i.startswith('.')]
+        images = [i for i in os.listdir(os.path.join(self.images_dir)) if not i.startswith('.')]
         
         keypoints, heatmaps = list(), list()
 
