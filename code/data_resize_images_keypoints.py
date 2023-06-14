@@ -214,6 +214,7 @@ elif args.database == 'original_files':
         
             # Filename
             filename = filenames_list[idx]
+            print(filename)
 
             # Open image
             image_fpath = os.path.join(or_images_dir, filename)
