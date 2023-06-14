@@ -31,7 +31,6 @@ parser.add_argument('--model_directory', type=str, required=True, help="Model di
 # Parse the arguments
 args = parser.parse_args()
 DATABASE = args.database
-NUM_WORKERS = args.num_workers
 DEVICE = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
 MODEL_DIR = args.results_directory
 
