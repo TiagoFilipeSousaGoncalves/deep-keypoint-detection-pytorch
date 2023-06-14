@@ -32,7 +32,7 @@ parser.add_argument('--model_directory', type=str, required=True, help="Model di
 args = parser.parse_args()
 DATABASE = args.database
 DEVICE = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
-MODEL_DIR = args.results_directory
+MODEL_DIR = args.model_directory
 
 
 
