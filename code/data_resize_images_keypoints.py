@@ -219,7 +219,7 @@ elif args.database == 'original_files':
             image_fpath = os.path.join(or_images_dir, filename)
             
             # Read image
-            image = cv2.imread(os.path.join(image_fpath))
+            image = cv2.imread(image_fpath)
 
             # Keypoints
             keypoints = keypoints_list[idx]
